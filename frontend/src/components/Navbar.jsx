@@ -17,6 +17,9 @@ function Navbar({ isLoggedIn, onLogout }) {
             <li className="nav-item">
               <Link className="nav-link" to="/leaderboard">Leaderboard</Link>
             </li>
+            <li className="nav-item">
+              <Link className="nav-link" to="/profile">Profile</Link>
+            </li>
             {isLoggedIn ? (
             <>
               <li className="nav-item">

@@ -1,5 +1,6 @@
 const express = require('express');
-const { registerUser, loginUser, getProfile } = require('../controllers/userController'); // Import controller methods
+const { registerUser, loginUser, getProfile, saveTestScore, getLeaderboard } = require('../controllers/userController'); // Import getLeaderboard
+const { authenticateUser } = require('../middleware/authMiddleware');
 const router = express.Router();
 
 // Middleware to validate registration fields
@@ -18,24 +19,6 @@ const validateLogin = (req, res, next) => {
     return res.status(400).json({ message: 'Please provide email and password.' });
   }
   next();
-};
-
-// Middleware to authenticate users (make sure to adjust the logic to verify JWT tokens)
-const authenticate = (req, res, next) => {
-  const token = req.headers.authorization?.split(' ')[1];
-  if (!token) {
-    return res.status(403).json({ message: 'Access denied. No token provided.' });
-  }
-  
-  // Here, you would verify the token and set req.user accordingly
-  // Assuming you have a function verifyToken to handle this
-  try {
-    const decoded = verifyToken(token); // Implement this function as per your auth strategy
-    req.user = decoded; // Attach user info to request
-    next();
-  } catch (error) {
-    return res.status(401).json({ message: 'Invalid token.' });
-  }
 };
 
 // Register user
@@ -58,13 +41,35 @@ router.post('/login', validateLogin, async (req, res) => {
   }
 });
 
-// Get user profile
-router.get('/profile', authenticate, async (req, res) => {
+// Get user profile - protected route
+router.get('/profile', authenticateUser, async (req, res) => {
   try {
-    await getProfile(req, res); // Ensure this function is implemented in your controller
+    await getProfile(req, res);
   } catch (error) {
     console.error('Error fetching profile:', error);
     res.status(500).json({ message: 'Server error while fetching profile.' });
+  }
+});
+
+// Save test score - protected route
+router.post('/save-score', authenticateUser, async (req, res) => {
+  console.log("Reached save-score route"); // Debugging log
+  try {
+    await saveTestScore(req, res);
+  } catch (error) {
+    console.error('Error saving test score:', error);
+    res.status(500).json({ message: 'Server error while saving test score.' });
+  }
+});
+
+
+// Leaderboard route
+router.get('/leaderboard', async (req, res) => {
+  try {
+    await getLeaderboard(req, res);
+  } catch (error) {
+    console.error('Error fetching leaderboard:', error);
+    res.status(500).json({ message: 'Server error while fetching leaderboard.' });
   }
 });
 

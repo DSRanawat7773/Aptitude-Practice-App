@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+
 import Home from "./Pages/Home";
 import Register from "./Pages/Register";
 import Practice from "./Pages/Practice";
@@ -11,6 +11,7 @@ import TestQuestions from './components/TestComponents/TestQuestions';
 import TestStart from './components/TestComponents/TestStart';
 import Navbar from './components/Navbar';
 import Login from './Pages/Login';
+import Profile from './Pages/Profile';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -30,20 +31,21 @@ function App() {
   };
 
   return (
-    <Router>
-      <Navbar isLoggedIn={isLoggedIn} onLogout={handleLogout} />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/practice" element={<Practice />} />
-        <Route path="/categories" element={<Categories />} />
-        <Route path="/test-start/:category" element={<TestStart />} />
-        <Route path="/test-questions/:category" element={<TestQuestions />} />
-        <Route path="/scorecard" element={<ScoreCard />} />
-        <Route path="/leaderboard" element={<Leaderboard />} />
-        <Route path="/login" element={<Login onLogin={handleLogin} />} />
-      </Routes>
-    </Router>
+        <Router>
+          <Navbar isLoggedIn={isLoggedIn} onLogout={handleLogout} />
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/practice" element={<Practice />} />
+            <Route path="/categories" element={<Categories />} />
+            <Route path="/test-start/:category" element={<TestStart />} />
+            <Route path="/test-questions/:category" element={<TestQuestions />} />
+            <Route path="/scorecard" element={<ScoreCard />} />
+            <Route path="/leaderboard" element={<Leaderboard />} />
+            <Route path="/login" element={<Login onLogin={handleLogin} />} />
+            <Route path="/profile" element={<Profile/>} />
+          </Routes>
+        </Router>
   );
 }
 

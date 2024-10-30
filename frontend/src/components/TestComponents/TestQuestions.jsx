@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { selectQuestionsByCategory } from '../../store/questionsSlice';
+// import './TestQuestions.css'; // Custom CSS for additional styling
 
 function TestQuestions() {
   const { category } = useParams();
@@ -10,20 +12,8 @@ function TestQuestions() {
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(1800); // 30 minutes in seconds
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [hasAnswered, setHasAnswered] = useState(false); // Track if the current question was answered
+  const [hasAnswered, setHasAnswered] = useState(false);
   const navigate = useNavigate();
-
-  const handleAnswer = (isCorrect) => {
-    if (isCorrect) {
-      setScore(score + 1);
-    }
-    setHasAnswered(true); // Mark question as answered
-  };
-
-  const handleSubmit = () => {
-    setIsSubmitted(true); // Mark as submitted
-    navigate('/scorecard', { state: { score, total: questions.length } });
-  };
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -35,10 +25,34 @@ function TestQuestions() {
         }
         return prev - 1;
       });
-    }, 1000); // Decrease every second
+    }, 1000);
 
     return () => clearInterval(timer);
-  }, [navigate, score, questions.length]);
+  }, [navigate, score]);
+
+  const handleAnswer = (isCorrect) => {
+    if (isCorrect) {
+      setScore((prev) => prev + 1);
+    }
+    setHasAnswered(true);
+  };
+
+  const handleSubmit = async () => {
+    try {
+      await axios.post(
+        'http://localhost:5000/api/users/save-score',
+        { category, score },
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        }
+      );
+      setIsSubmitted(true);
+      navigate('/scorecard', { state: { score, total: questions.length } });
+    } catch (error) {
+      console.error('Error saving score:', error);
+      alert('There was an error saving your score. Please try again.');
+    }
+  };
 
   const formatTime = (time) => {
     const minutes = Math.floor(time / 60);
@@ -47,100 +61,80 @@ function TestQuestions() {
   };
 
   const goToNextQuestion = () => {
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-      setHasAnswered(false); // Reset answered state for the next question
+    if (hasAnswered && currentQuestionIndex < questions.length - 1) {
+      setCurrentQuestionIndex((prev) => prev + 1);
+      setHasAnswered(false);
     }
   };
 
   const goToPrevQuestion = () => {
     if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(currentQuestionIndex - 1);
-      setHasAnswered(false); // Reset answered state for the previous question
+      setCurrentQuestionIndex((prev) => prev - 1);
+      setHasAnswered(false);
     }
   };
 
-  // Handle alert when user attempts to leave the page without submitting
   useEffect(() => {
     const handleBeforeUnload = (event) => {
       if (!isSubmitted) {
         event.preventDefault();
-        event.returnValue = ''; // Chrome requires returnValue to be set for the warning dialog
+        event.returnValue = '';
       }
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
 
     return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload); // Cleanup on unmount
-    };
-  }, [isSubmitted]);
-
-  // Handle in-app navigation (React Router v6 doesn't support blocking like v5)
-  useEffect(() => {
-    const unblock = () => {
-      if (!isSubmitted) {
-        const confirmLeave = window.confirm('You have unsaved changes. Are you sure you want to leave?');
-        if (confirmLeave) {
-          return true; // Proceed with navigation
-        } else {
-          return false; // Cancel navigation
-        }
-      }
-      return true; // If submitted, allow navigation
-    };
-
-    window.onbeforeunload = unblock;
-
-    return () => {
-      window.onbeforeunload = null; // Cleanup on unmount
+      window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, [isSubmitted]);
 
   return (
     <div className="container mt-5">
-      <h2>Question {currentQuestionIndex + 1}/{questions.length}</h2>
-      <p>{questions[currentQuestionIndex].question}</p>
-      {questions[currentQuestionIndex].options.map((option, index) => (
-        <button
-          key={index}
-          className="btn btn-outline-primary d-block mt-2"
-          onClick={() => handleAnswer(option === questions[currentQuestionIndex].correctAnswer)}
-        >
-          {option}
-        </button>
-      ))}
-      <div className="mt-4">
-        <h3 className="text-lg font-semibold">Time Left: {formatTime(timeLeft)}</h3>
-      </div>
+      <div className="card shadow-sm">
+        <div className="card-body">
+          <h2 className="card-title">Question {currentQuestionIndex + 1}/{questions.length}</h2>
+          <p className="lead">{questions[currentQuestionIndex]?.question}</p>
+          <div className="options-container">
+            {questions[currentQuestionIndex]?.options.map((option, index) => (
+              <button
+                key={index}
+                className={`btn btn-outline-primary d-block mt-2 option-button ${
+                  hasAnswered ? (option === questions[currentQuestionIndex]?.correctAnswer ? 'bg-success text-white' : 'bg-danger text-white') : ''
+                }`}
+                onClick={() => handleAnswer(option === questions[currentQuestionIndex]?.correctAnswer)}
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+          <div className="mt-4">
+            <h3 className="text-lg font-semibold">Time Left: {formatTime(timeLeft)}</h3>
+          </div>
 
-      {/* Navigation buttons */}
-      <div className="mt-4">
-        <button
-          className="btn btn-secondary mr-2"
-          disabled={currentQuestionIndex === 0}
-          onClick={goToPrevQuestion}
-        >
-          Previous
-        </button>
-        <button
-          className="btn btn-secondary mr-2"
-          disabled={currentQuestionIndex === questions.length - 1 || !hasAnswered}
-          onClick={goToNextQuestion}
-        >
-          Next
-        </button>
-      </div>
+          {/* Navigation buttons */}
+          <div className="mt-4 d-flex justify-content-between">
 
-      {/* Submit button */}
-      <div className="mt-4">
-        <button
-          className="btn btn-danger"
-          onClick={handleSubmit}
-          disabled={isSubmitted || !hasAnswered} // Prevent submission if not answered
-        >
-          Submit
-        </button>
+            <button
+              className="btn btn-secondary"
+              disabled={currentQuestionIndex === questions.length - 1 || !hasAnswered}
+              onClick={goToNextQuestion}
+            >
+              Next
+            </button>
+          </div>
+
+          {/* Submit button */}
+          <div className="mt-4">
+            <button
+              className="btn btn-danger"
+              onClick={handleSubmit}
+              disabled={isSubmitted || !hasAnswered}
+            >
+              Submit
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

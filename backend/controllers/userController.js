@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const { calculateRanks } = require('../utils/rankUtils');
 
 // Generate a JWT token
 const generateToken = (id) => {
@@ -88,8 +89,53 @@ const getProfile = async (req, res) => {
   }
 };
 
+// Save test score
+const saveTestScore = async (req, res) => {
+  console.log('saveTestScore called with:', req.body);
+  const { score, category } = req.body;
+
+  if (!score || typeof score !== 'number' || score < 0 || !category) {
+    return res.status(400).json({ message: 'Score and category are required and must be valid.' });
+  }
+
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Save score
+    user.scores.push({ category, score });
+    user.cumulativeScore += score; // Update cumulative score
+    await user.save();
+
+    // Call calculateRanks after saving the score
+    await calculateRanks();
+
+    res.status(200).json({ message: 'Score saved successfully and ranks updated.' });
+  } catch (error) {
+    console.error("Database error:", error.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+
+
+// Get leaderboard data
+const getLeaderboard = async (req, res) => {
+  try {
+    const users = await User.find().sort({ overallRank: 1 }).select('username cumulativeScore overallRank college collegeRank');
+    res.json(users);
+  } catch (error) {
+    console.error('Error fetching leaderboard:', error);
+    res.status(500).json({ message: 'Server error fetching leaderboard.' });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
-  getProfile, // Export the getProfile function
+  getProfile,
+  saveTestScore, // Export saveTestScore
+  getLeaderboard,
 };

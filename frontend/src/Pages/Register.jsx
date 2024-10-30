@@ -1,7 +1,7 @@
 // src/pages/Register.jsx
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import authService from '../services/authService'; // Import authService
+import authService from '../services/authService'; 
 
 function Register() {
   const [username, setUsername] = useState('');

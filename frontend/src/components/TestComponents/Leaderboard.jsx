@@ -1,48 +1,108 @@
-import React, { useState, useEffect } from 'react';
+// src/components/TestComponents/Leaderboard.jsx
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import authService from '../../services/authService';
+import { Bar } from 'react-chartjs-2';
+import { Container, Row, Col, Card, ListGroup, Spinner, Alert } from 'react-bootstrap';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
 
-function Leaderboard() {
-  const [collegeLeaderboard, setCollegeLeaderboard] = useState([]);
-  const [overallLeaderboard, setOverallLeaderboard] = useState([]);
-  const [userCollege, setUserCollege] = useState('');
+// Register Chart.js components
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+
+const Leaderboard = () => {
+  const [leaderboard, setLeaderboard] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    authService.getProfile()
-      .then((user) => {
-        setUserCollege(user.college); // Set college name from user profile
-        console.log('College for leaderboard:', user.college); // Log college
-  
-        // Fetch college-specific leaderboard
-        return axios.get(`http://localhost:5000/api/leaderboard/college/${user.college}`);
-      })
-      .then((response) => setCollegeLeaderboard(response.data))
-      .catch((error) => console.error('Error fetching college leaderboard:', error));
-    
-    // Fetch overall leaderboard
-    axios.get('http://localhost:5000/api/leaderboard/overall')
-      .then((response) => setOverallLeaderboard(response.data))
-      .catch((error) => console.error('Error fetching overall leaderboard:', error));
+    const fetchLeaderboard = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/api/users/leaderboard');
+        setLeaderboard(response.data);
+      } catch (error) {
+        setError("Error fetching leaderboard. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLeaderboard();
   }, []);
-  
+
+  // Prepare data for the chart
+  const chartData = {
+    labels: leaderboard.map(user => user.username),
+    datasets: [
+      {
+        label: 'Cumulative Scores',
+        data: leaderboard.map(user => user.cumulativeScore),
+        backgroundColor: 'rgba(75, 192, 192, 0.6)',
+        borderColor: 'rgba(75, 192, 192, 1)',
+        borderWidth: 1,
+      },
+    ],
+  };
 
   return (
-    <div>
-      <h2>Leaderboard - {userCollege || 'Loading...'}</h2>
-      <ul>
-        {collegeLeaderboard.map(user => (
-          <li key={user._id}>{user.username} - {user.score}</li>
-        ))}
-      </ul>
-
-      <h2>Overall Leaderboard</h2>
-      <ul>
-        {overallLeaderboard.map(user => (
-          <li key={user._id}>{user.username} - {user.score}</li>
-        ))}
-      </ul>
-    </div>
+    <Container className="my-4">
+      <h2 className="text-center mb-4">Overall Leaderboard</h2>
+      {loading ? (
+        <div className="text-center">
+          <Spinner animation="border" role="status" />
+          <span className="ms-2">Loading...</span>
+        </div>
+      ) : error ? (
+        <Alert variant="danger" className="text-center">
+          {error}
+        </Alert>
+      ) : (
+        <Row>
+          <Col md={8}>
+            <Card className="mb-4 shadow">
+              <Card.Header className="bg-success text-white">
+                Leaderboard
+              </Card.Header>
+              <ListGroup variant="flush">
+                {leaderboard.map((user, index) => (
+                  <ListGroup.Item key={user._id} className="d-flex justify-content-between align-items-center">
+                    <span>
+                      {index + 1}. {user.username}
+                    </span>
+                    <span className="badge bg-primary me-2">
+                      Score: {user.cumulativeScore}
+                    </span>
+                    <span className="text-secondary">
+                      Overall Rank: {user.overallRank}
+                    </span>
+                    <span className="text-warning">
+                      College Rank: {user.collegeRank}
+                    </span>
+                  </ListGroup.Item>
+                ))}
+              </ListGroup>
+            </Card>
+          </Col>
+          <Col md={4}>
+            <Card className="mb-4 shadow">
+              <Card.Header className="bg-info text-white">
+                Score Visualization
+              </Card.Header>
+              <Card.Body>
+                <Bar data={chartData} options={{ responsive: true }} />
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+      )}
+    </Container>
   );
-}
+};
 
 export default Leaderboard;

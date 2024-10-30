@@ -18,9 +18,9 @@ function Login({ onLogin }) {
         password,
       });
 
-      console.log(response.data); // Debugging line to check response structure
+      console.log(response.data); 
 
-      const { token } = response.data; // Ensure this is correct
+      const { token } = response.data; 
 
       // Store the token in local storage
       localStorage.setItem('token', token);
