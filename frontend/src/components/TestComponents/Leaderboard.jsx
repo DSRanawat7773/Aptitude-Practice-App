@@ -1,5 +1,5 @@
 // src/components/TestComponents/Leaderboard.jsx
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Bar } from 'react-chartjs-2';
 import { Container, Row, Col, Card, ListGroup, Spinner, Alert } from 'react-bootstrap';
@@ -12,6 +12,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
+import { useUser } from '../../context/UserContext';
 
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
@@ -20,6 +21,10 @@ const Leaderboard = () => {
   const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // Access only the college name from the user context
+  const { user } = useUser();
+  const collegeName = user?.college;
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
@@ -52,6 +57,7 @@ const Leaderboard = () => {
 
   return (
     <Container className="my-4">
+      <h4>{collegeName || "College information not available"}</h4>
       <h2 className="text-center mb-4">Overall Leaderboard</h2>
       {loading ? (
         <div className="text-center">

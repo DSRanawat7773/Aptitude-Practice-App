@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-
+// import { UserProvider } from './context/UserContext';
 import Home from "./Pages/Home";
 import Register from "./Pages/Register";
 import Practice from "./Pages/Practice";
@@ -12,6 +12,8 @@ import TestStart from './components/TestComponents/TestStart';
 import Navbar from './components/Navbar';
 import Login from './Pages/Login';
 import Profile from './Pages/Profile';
+import { UserProvider } from './context/UserContext';
+
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -31,6 +33,7 @@ function App() {
   };
 
   return (
+    <UserProvider>
         <Router>
           <Navbar isLoggedIn={isLoggedIn} onLogout={handleLogout} />
           <Routes>
@@ -46,6 +49,7 @@ function App() {
             <Route path="/profile" element={<Profile/>} />
           </Routes>
         </Router>
+    </UserProvider>
   );
 }
 

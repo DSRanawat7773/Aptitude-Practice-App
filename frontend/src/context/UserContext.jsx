@@ -1,16 +1,44 @@
-// src/context/UserContext.js
-import React, { createContext, useContext, useState } from 'react';
+// src/context/UserContext.jsx
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import axios from 'axios';
 
+// Create the UserContext
 const UserContext = createContext();
 
+// Custom hook to use the UserContext
+export const useUser = () => useContext(UserContext);
+
+// Provider component to wrap around the app or relevant parts of the app
 export const UserProvider = ({ children }) => {
-  const [user, setUser] = useState(null); // Initialize user state
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const value = { user, setUser }; // Provide user and updater function
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) throw new Error("No token found. Please log in.");
 
-  return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
-};
+        const response = await axios.get('http://localhost:5000/api/users/profile', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
-export const useUser = () => {
-  return useContext(UserContext); // Custom hook to use context
+        setUser(response.data);
+      } catch (err) {
+        console.error('Error fetching user profile:', err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserProfile();
+  }, []);
+
+  return (
+    <UserContext.Provider value={{ user, loading, error, setUser }}>
+      {children}
+    </UserContext.Provider>
+  );
 };
