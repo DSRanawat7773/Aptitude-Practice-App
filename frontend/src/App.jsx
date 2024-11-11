@@ -12,6 +12,7 @@ import TestStart from './components/TestComponents/TestStart';
 import Navbar from './components/Navbar';
 import Login from './Pages/Login';
 import Profile from './Pages/Profile';
+import Footer from './components/Footer';
 import { UserProvider } from './context/UserContext';
 
 

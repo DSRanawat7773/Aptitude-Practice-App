@@ -4,8 +4,8 @@ import FeaturesSection from '../components/HomeComponents/FeaturesSection';
 import HowItWorksSection from '../components/HomeComponents/HowItWorksSection';
 import TestimonialsSection from '../components/HomeComponents/TestimonialsSection';
 import FAQSection from '../components/HomeComponents/FAQSection';
-import Footer from '../components/Footer';
 import { useUser } from '../context/UserContext';
+import Footer from '../components/Footer';
 
 const Home = () => {
 
@@ -17,7 +17,7 @@ const Home = () => {
       <HowItWorksSection />
       <TestimonialsSection />
       <FAQSection />
-      <Footer />
+      <Footer/>
     </div>
   );
 };
