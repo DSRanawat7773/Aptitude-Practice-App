@@ -29,7 +29,7 @@ const Leaderboard = () => {
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/users/leaderboard');
+        const response = await axios.get('https://aptiqbackend.onrender.com/api/users/leaderboard');
         setLeaderboard(response.data);
       } catch (error) {
         setError("Error fetching leaderboard. Please try again later.");

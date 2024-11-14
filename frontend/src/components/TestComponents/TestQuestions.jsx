@@ -43,7 +43,7 @@ function TestQuestions() {
   const handleSubmit = async () => {
     try {
       await axios.post(
-        'http://localhost:5000/api/users/save-score',
+        'https://aptiqbackend.onrender.com/api/users/save-score',
         { category, score },
         {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },

@@ -41,7 +41,7 @@ function Register() {
 
   const handleSendOtp = async () => {
     try {
-      const response = await axios.post('http://localhost:5000/api/send-otp', { email, username });
+      const response = await axios.post('https://aptiqbackend.onrender.com/api/send-otp', { email, username });
       if (response.data.success) setOtpSent(true);
     } catch (error) {
       setOtpError('Error sending OTP.');
@@ -50,7 +50,7 @@ function Register() {
 
   const handleVerifyOtp = async () => {
     try {
-      const response = await axios.post('http://localhost:5000/api/verify-otp', { email, otp });
+      const response = await axios.post('https://aptiqbackend.onrender.com/api/verify-otp', { email, otp });
       if (response.data.success) setOtpVerified(true);
     } catch (error) {
       setOtpError('Invalid OTP. Please try again.');
