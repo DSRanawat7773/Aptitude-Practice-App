@@ -1,7 +1,7 @@
 // src/services/authService.js
 import axios from 'axios';
 
-const API_URL =  'https://aptiqbackend.onrender.com/api/users/';
+const API_URL =  'http://localhost:5173/api/users/';
 
 // Register user
 const register = async (userData) => {

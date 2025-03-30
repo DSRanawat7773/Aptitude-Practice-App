@@ -14,7 +14,7 @@ const authenticateUser = (req, res, next) => {
     console.log("User authenticated:", req.user);
     next(); // Proceed to the next middleware or route handler
   } catch (error) {
-    console.log("Token verification failed:", err.message);
+    console.log("Token verification failed:", error.message);
     return res.status(401).json({ message: 'Invalid token. Please log in again.' });
   }
 };

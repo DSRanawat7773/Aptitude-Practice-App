@@ -76,6 +76,7 @@ const loginUser = async (req, res) => {
 
 // Get user profile
 const getProfile = async (req, res) => {
+  console.log('saveTestScore called with:', req.body)
   try {
     // Use req.user populated by your authenticate middleware
     const user = await User.findById(req.user.id).select('-password'); // Exclude password from response

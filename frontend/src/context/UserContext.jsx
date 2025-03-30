@@ -20,7 +20,7 @@ export const UserProvider = ({ children }) => {
         const token = localStorage.getItem('token');
         if (!token) throw new Error("No token found. Please log in.");
 
-        const response = await axios.get('https://aptiqbackend.onrender.com/api/users/profile', {
+        const response = await axios.get('http://localhost:5000/api/users/profile', {
           headers: { Authorization: `Bearer ${token}` },
         });
 
